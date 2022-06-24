@@ -37,4 +37,18 @@
         tools:ignore="HardcodedText"
         />
 
+    <TextView
+        android:id="@+id/manufacturer"
+        android:layout_margin="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
+    <TextView
+        android:id="@+id/model"
+        android:layout_margin="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
 </LinearLayout>

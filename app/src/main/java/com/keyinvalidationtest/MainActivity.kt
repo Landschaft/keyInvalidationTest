@@ -1,5 +1,6 @@
 package com.keyinvalidationtest
 
+import android.os.Build
 import android.os.Bundle
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
@@ -7,6 +8,7 @@ import android.security.keystore.KeyProperties.DIGEST_SHA256
 import android.security.keystore.KeyProperties.PURPOSE_SIGN
 import android.util.Log
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
@@ -15,12 +17,16 @@ import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import java.security.*
 import java.security.interfaces.ECKey
 import java.security.spec.ECGenParameterSpec
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        findViewById<TextView>(R.id.manufacturer).text = Build.MANUFACTURER
+        findViewById<TextView>(R.id.model).text = Build.MODEL
 
         findViewById<Button>(R.id.createButton).setOnClickListener {
             if (getPrivateKey() == null) {
@@ -90,8 +96,9 @@ class MainActivity : AppCompatActivity() {
             KeyProperties.KEY_ALGORITHM_EC,
             "AndroidKeyStore"
         ).apply {
+            setAlias()
             initialize(
-                KeyGenParameterSpec.Builder(alias, PURPOSE_SIGN)
+                KeyGenParameterSpec.Builder(getAlias(), PURPOSE_SIGN)
                     .setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
                     .setDigests(DIGEST_SHA256)
                     .setUserAuthenticationRequired(true)
@@ -103,10 +110,10 @@ class MainActivity : AppCompatActivity() {
             .generateKeyPair()
 
     private fun getPrivateKey(): ECKey? =
-        getKeyStore().getKey(alias, null) as ECKey?
+        getKeyStore().getKey(getAlias(), null) as ECKey?
 
     private fun deleteKey() =
-        getKeyStore().deleteEntry(alias)
+        getKeyStore().deleteEntry(getAlias())
 
     private fun getKeyStore(): KeyStore =
         KeyStore.getInstance("AndroidKeyStore").apply {
@@ -120,6 +127,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun snack(message: String) =
         Snackbar.make(findViewById(R.id.content), message, LENGTH_SHORT).show()
+
+    private fun setAlias() {
+        val uuid = UUID.randomUUID()
+        getPreferences(MODE_PRIVATE)
+            .edit()
+            .putString(alias, uuid.toString())
+            .apply()
+    }
+
+    private fun getAlias(): String {
+        val alias = getPreferences(MODE_PRIVATE).getString(alias, "asdf")!!
+        Log.i(null, "Alias: $alias")
+        return alias
+    }
 
     companion object {
         const val alias = "the_alias"
