@@ -70,8 +70,8 @@ class MainActivity : AppCompatActivity() {
                         super.onAuthenticationSucceeded(result)
                         try {
                             signature.update(Byte.MAX_VALUE)
-                            val signed = signature.sign()
-                            snack("Key has been used to sign")
+                            val signed: ByteArray = signature.sign()
+                            snack("Key has been used to sign -> ${signed.size} bytes")
                         } catch (e: java.lang.Exception) {
                             snack(e)
                         }
